@@ -1,28 +1,27 @@
 import pandas as pd
-import numpy as np
-from scipy.stats import boxcox
-import matplotlib.pyplot as plt
+from imblearn.over_sampling import SMOTE, ADASYN
+from imblearn.under_sampling import RandomUnderSampler
 
 # Load the dataset
-bike_df = pd.read_csv('bike_sharing.csv')
+credit_df = pd.read_csv('credit_card_fraud.csv')
 
-# Log Transformation
-bike_df['log_count'] = np.log1p(bike_df['count'])
+# Separate features and target
+X = credit_df.drop('Class', axis=1)
+y = credit_df['Class']
 
-# Square Root Transformation
-bike_df['sqrt_count'] = np.sqrt(bike_df['count'])
+# SMOTE
+smote = SMOTE()
+X_smote, y_smote = smote.fit_resample(X, y)
 
-# Box-Cox Transformation
-bike_df['boxcox_count'], _ = boxcox(bike_df['count'] + 1)  # Add 1 to avoid zero values
+# ADASYN
+adasyn = ADASYN()
+X_adasyn, y_adasyn = adasyn.fit_resample(X, y)
 
-# Plotting the transformations
-fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-bike_df['count'].hist(ax=axes[0, 0], bins=30)
-axes[0, 0].set_title('Original Count')
-bike_df['log_count'].hist(ax=axes[0, 1], bins=30)
-axes[0, 1].set_title('Log Transformed Count')
-bike_df['sqrt_count'].hist(ax=axes[1, 0], bins=30)
-axes[1, 0].set_title('Square Root Transformed Count')
-bike_df['boxcox_count'].hist(ax=axes[1, 1], bins=30)
-axes[1, 1].set_title('Box-Cox Transformed Count')
-plt.show()
+# Undersampling
+undersampler = RandomUnderSampler()
+X_undersampled, y_undersampled = undersampler.fit_resample(X, y)
+
+print("Original dataset shape:", y.value_counts())
+print("SMOTE dataset shape:", pd.Series(y_smote).value_counts())
+print("ADASYN dataset shape:", pd.Series(y_adasyn).value_counts())
+print("Undersampled dataset shape:", pd.Series(y_undersampled).value_counts())
